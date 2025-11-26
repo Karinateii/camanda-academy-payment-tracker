@@ -2,6 +2,25 @@
 
 A professional, interactive web application for tracking student payments. Built with vanilla HTML, CSS, and JavaScript with no external dependencies.
 
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Status](https://img.shields.io/badge/status-production-success.svg)
+
+## 🌟 Live Demo
+
+👉 [View Live Application](https://karinateii.github.io/camanda-academy-payment-tracker/)
+
+## 📸 Screenshots
+
+### Dashboard View
+Professional dashboard with real-time statistics and payment tracking.
+
+### Payment Form
+Intuitive form with validation and helpful user feedback.
+
+### Payment History
+Searchable, sortable table with all transaction records.
+
 ## 📋 Features
 
 ### Core Functionality
@@ -11,13 +30,17 @@ A professional, interactive web application for tracking student payments. Built
 - 📈 **Real-time Statistics**: Track total payments, amounts, and monthly totals
 - 🔔 **Notification System**: Visual feedback for user actions
 - 📤 **Export to CSV**: Download payment records for external use
+- 🔍 **Search Functionality**: Find payments instantly across all fields
+- ⚠️ **Confirmation Dialogs**: Prevent accidental data deletion
 
-### User Interface
-- 🎨 Modern, professional gradient design
-- 📱 Fully responsive (mobile, tablet, desktop)
-- ⚡ Smooth animations and transitions
-- 🎯 Intuitive form validation
-- 🔍 Clean data visualization
+### Premium Features
+- 🎯 **Loading Screen**: Professional animated loading on page load
+- 💡 **Quick Stats Widget**: Average payment, highest payment, recent students
+- 🎨 **Modern UI/UX**: Gradient design with smooth animations
+- 📱 **Fully Responsive**: Works seamlessly on mobile, tablet, desktop
+- ⚡ **Fast Performance**: Optimized rendering and data management
+- 🔐 **Secure**: XSS protection and input validation
+- ♿ **Accessible**: Semantic HTML and ARIA labels
 
 ## 🚀 Quick Start
 
@@ -54,7 +77,7 @@ CAMANDA-Academy/
 1. Fill in the required fields (marked with *)
    - Student Name
    - Amount (USD)
-   - Payment Date
+   - Payment Date (defaults to today)
    - Payment Method
 2. Optionally add:
    - Student ID
@@ -62,20 +85,44 @@ CAMANDA-Academy/
    - Additional notes
 3. Click "Submit Payment"
 4. Confirmation appears in the notification panel
+5. Payment appears instantly in history
+
+### Searching Payments
+- Type in the search box at the top of Payment History
+- Search works across:
+  - Student names
+  - Student IDs
+  - Course names
+  - Payment methods
+  - Amounts
+- Results update instantly as you type
+- Clear search to see all payments
 
 ### Viewing Payment History
 - All payments display in the history table
 - Most recent payments appear first
 - Includes: Date, Student, ID, Course, Amount, Method, Status
+- Hover over rows for visual feedback
+- Sticky headers stay visible while scrolling
+
+### Quick Stats
+Located in the sidebar, showing:
+- **Average Payment**: Mean of all payments
+- **Highest Payment**: Largest single transaction
+- **Recent Students**: Unique students in last 30 days
 
 ### Exporting Data
 - Click the "Export" button in the Payment History section
 - CSV file downloads automatically
 - Opens in Excel, Google Sheets, or any spreadsheet software
+- Includes all payment details and notes
 
 ### Clearing Data
 - **Clear Form**: Resets the input form only
-- **Clear All**: Deletes all payment records (requires confirmation)
+- **Clear All**: Deletes all payment records
+  - Shows confirmation dialog
+  - Prevents accidental deletion
+  - Action cannot be undone
 
 ## 🔧 Technical Details
 
