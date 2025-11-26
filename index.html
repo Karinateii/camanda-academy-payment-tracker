@@ -3,10 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional student payment tracking system for CAMANDA Academy. Track payments, generate reports, and manage student transactions efficiently.">
+    <meta name="keywords" content="payment tracker, student management, CAMANDA Academy, education, finance">
+    <meta name="author" content="CAMANDA Academy">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
     <title>CAMANDA Academy - Student Payment Tracker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader-content">
+            <div class="loader-icon">🎓</div>
+            <h2>CAMANDA Academy</h2>
+            <div class="loader-spinner"></div>
+        </div>
+    </div>
+
     <div class="container">
         <header class="header">
             <div class="logo">
@@ -24,16 +37,19 @@
                 <div class="stat-icon">💰</div>
                 <h3>Total Payments</h3>
                 <p class="stat-value" id="totalPayments">0</p>
+                <div class="stat-trend" id="paymentsTrend"></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">💵</div>
                 <h3>Total Amount</h3>
                 <p class="stat-value" id="totalAmount">$0.00</p>
+                <div class="stat-trend" id="amountTrend"></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📅</div>
                 <h3>This Month</h3>
                 <p class="stat-value" id="monthlyAmount">$0.00</p>
+                <div class="stat-trend" id="monthlyTrend"></div>
             </div>
         </section>
 
@@ -51,7 +67,7 @@
                                     <span class="label-text">Student Name</span>
                                     <span class="required">*</span>
                                 </label>
-                                <input type="text" id="studentName" required placeholder="Enter student full name">
+                                <input type="text" id="studentName" required placeholder="Enter student full name" autocomplete="name">
                             </div>
                         </div>
 
@@ -93,13 +109,13 @@
                                 </label>
                                 <select id="paymentMethod" required>
                                     <option value="">Select method</option>
-                                    <option value="Cash">Cash</option>
-                                    <option value="Credit Card">Credit Card</option>
-                                    <option value="Debit Card">Debit Card</option>
-                                    <option value="Bank Transfer">Bank Transfer</option>
-                                    <option value="Mobile Money">Mobile Money</option>
-                                    <option value="Check">Check</option>
-                                    <option value="PayPal">PayPal</option>
+                                    <option value="Cash">💵 Cash</option>
+                                    <option value="Credit Card">💳 Credit Card</option>
+                                    <option value="Debit Card">💳 Debit Card</option>
+                                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                                    <option value="Mobile Money">📱 Mobile Money</option>
+                                    <option value="Check">📝 Check</option>
+                                    <option value="PayPal">🅿️ PayPal</option>
                                 </select>
                             </div>
 
@@ -121,13 +137,33 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" id="clearBtn" class="btn btn-secondary">Clear Form</button>
+                            <button type="button" id="clearBtn" class="btn btn-secondary">
+                                <span class="btn-icon">↺</span>
+                                Clear Form
+                            </button>
                             <button type="submit" class="btn btn-primary">
                                 <span class="btn-icon">✓</span>
                                 Submit Payment
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <!-- Quick Stats Widget -->
+                <div class="card quick-stats-widget">
+                    <h3>💡 Quick Stats</h3>
+                    <div class="quick-stat-item">
+                        <span>Average Payment:</span>
+                        <strong id="avgPayment">$0.00</strong>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span>Highest Payment:</span>
+                        <strong id="highestPayment">$0.00</strong>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span>Recent Students:</span>
+                        <strong id="recentStudents">0</strong>
+                    </div>
                 </div>
             </aside>
 
@@ -139,6 +175,9 @@
                             <p>Complete record of all transactions</p>
                         </div>
                         <div class="header-actions">
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="🔍 Search payments...">
+                            </div>
                             <button id="exportBtn" class="btn btn-outline">
                                 <span class="btn-icon">⬇</span>
                                 Export
@@ -166,12 +205,32 @@
         </main>
 
         <footer class="footer">
-            <p>&copy; 2025 CAMANDA Academy. All rights reserved.</p>
-            <p>Student Payment Tracker v1.0</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <p>&copy; 2025 CAMANDA Academy. All rights reserved.</p>
+                    <p>Student Payment Tracker v1.0</p>
+                </div>
+                <div class="footer-section">
+                    <p>Built with ❤️ for education</p>
+                    <p id="lastUpdated"></p>
+                </div>
+            </div>
         </footer>
     </div>
 
     <div id="notification" class="notification"></div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div class="modal-actions">
+                <button id="modalCancel" class="btn btn-secondary">Cancel</button>
+                <button id="modalConfirm" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

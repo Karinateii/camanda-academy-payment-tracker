@@ -2,6 +2,7 @@
 // Application State
 // ===========================
 let payments = JSON.parse(localStorage.getItem('payments')) || [];
+let filteredPayments = [...payments];
 
 // ===========================
 // DOM Elements
@@ -11,11 +12,21 @@ const clearBtn = document.getElementById('clearBtn');
 const exportBtn = document.getElementById('exportBtn');
 const clearAllBtn = document.getElementById('clearAllBtn');
 const paymentHistory = document.getElementById('paymentHistory');
+const searchInput = document.getElementById('searchInput');
+const loadingScreen = document.getElementById('loadingScreen');
 
 // ===========================
 // Initialize Application
 // ===========================
 function init() {
+    // Hide loading screen after delay
+    setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 500);
+    }, 1500);
+    
     // Set today's date as default
     document.getElementById('paymentDate').valueAsDate = new Date();
     
@@ -23,11 +34,20 @@ function init() {
     paymentForm.addEventListener('submit', handleFormSubmit);
     clearBtn.addEventListener('click', handleClearForm);
     exportBtn.addEventListener('click', handleExport);
-    clearAllBtn.addEventListener('click', handleClearAll);
+    clearAllBtn.addEventListener('click', () => showConfirmModal(
+        'Clear All Payments',
+        `Are you sure you want to delete all ${payments.length} payment records? This action cannot be undone.`,
+        handleClearAll
+    ));
+    searchInput.addEventListener('input', handleSearch);
+    
+    // Update last updated timestamp
+    updateLastUpdated();
     
     // Initial render
     displayPayments();
     updateStats();
+    updateQuickStats();
 }
 
 // ===========================
@@ -58,6 +78,7 @@ function handleFormSubmit(e) {
     
     // Add to payments array (newest first)
     payments.unshift(payment);
+    filteredPayments = [...payments];
     
     // Save to localStorage
     savePayments();
@@ -73,13 +94,33 @@ function handleFormSubmit(e) {
     handleClearForm();
     
     // Update UI
+    updateLastUpdated();
     displayPayments();
     updateStats();
+    updateQuickStats();
 }
 
 function handleClearForm() {
     paymentForm.reset();
     document.getElementById('paymentDate').valueAsDate = new Date();
+}
+
+function handleSearch(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    
+    if (searchTerm === '') {
+        filteredPayments = [...payments];
+    } else {
+        filteredPayments = payments.filter(p => 
+            p.studentName.toLowerCase().includes(searchTerm) ||
+            p.studentId.toLowerCase().includes(searchTerm) ||
+            p.course.toLowerCase().includes(searchTerm) ||
+            p.paymentMethod.toLowerCase().includes(searchTerm) ||
+            p.amount.toString().includes(searchTerm)
+        );
+    }
+    
+    displayPayments();
 }
 
 function handleExport() {
@@ -121,25 +162,39 @@ function handleExport() {
 }
 
 function handleClearAll() {
-    if (payments.length === 0) {
-        showNotification('No Data', 'There are no payments to clear.', 'error');
-        return;
-    }
-    
-    if (confirm(`Are you sure you want to delete all ${payments.length} payment records? This action cannot be undone.`)) {
-        payments = [];
-        savePayments();
-        displayPayments();
-        updateStats();
-        showNotification('Data Cleared', 'All payment records have been deleted.', 'success');
-    }
+    payments = [];
+    filteredPayments = [];
+    savePayments();
+    searchInput.value = '';
+    updateLastUpdated();
+    displayPayments();
+    updateStats();
+    updateQuickStats();
+    showNotification('Data Cleared', 'All payment records have been deleted.', 'success');
 }
 
 // ===========================
 // Display Functions
 // ===========================
 function displayPayments() {
-    if (payments.length === 0) {
+    const displayData = filteredPayments.length > 0 ? filteredPayments : 
+                        (searchInput.value.trim() !== '' ? [] : payments);
+    
+    if (displayData.length === 0 && searchInput.value.trim() !== '') {
+        paymentHistory.innerHTML = `
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <h3>No Results Found</h3>
+                <p>Try adjusting your search terms</p>
+            </div>
+        `;
+        return;
+    }
+    
+    if (displayData.length === 0) {
         paymentHistory.innerHTML = `
             <div class="empty-state">
                 <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -171,7 +226,7 @@ function displayPayments() {
             <tbody>
     `;
     
-    payments.forEach(payment => {
+    displayData.forEach(payment => {
         const formattedDate = formatDate(payment.date);
         
         tableHTML += `
@@ -214,6 +269,98 @@ function updateStats() {
     document.getElementById('totalPayments').textContent = totalPayments.toLocaleString();
     document.getElementById('totalAmount').textContent = `$${totalAmount.toFixed(2)}`;
     document.getElementById('monthlyAmount').textContent = `$${monthlyAmount.toFixed(2)}`;
+}
+
+// ===========================
+// Quick Stats Functions
+// ===========================
+function updateQuickStats() {
+    if (payments.length === 0) {
+        document.getElementById('avgPayment').textContent = '$0.00';
+        document.getElementById('highestPayment').textContent = '$0.00';
+        document.getElementById('recentStudents').textContent = '0';
+        return;
+    }
+    
+    // Calculate average payment
+    const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
+    const avgPayment = totalAmount / payments.length;
+    
+    // Find highest payment
+    const highestPayment = Math.max(...payments.map(p => p.amount));
+    
+    // Count unique students in last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentStudents = new Set(
+        payments
+            .filter(p => new Date(p.date) >= thirtyDaysAgo)
+            .map(p => p.studentName)
+    ).size;
+    
+    document.getElementById('avgPayment').textContent = `$${avgPayment.toFixed(2)}`;
+    document.getElementById('highestPayment').textContent = `$${highestPayment.toFixed(2)}`;
+    document.getElementById('recentStudents').textContent = recentStudents.toString();
+}
+
+// ===========================
+// Modal Functions
+// ===========================
+function showConfirmModal(title, message, confirmCallback) {
+    if (payments.length === 0) {
+        showNotification('No Data', 'There are no payments to clear.', 'error');
+        return;
+    }
+    
+    const modal = document.getElementById('confirmModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalConfirm = document.getElementById('modalConfirm');
+    const modalCancel = document.getElementById('modalCancel');
+    
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.classList.add('show');
+    
+    // Remove old listeners
+    const newConfirm = modalConfirm.cloneNode(true);
+    const newCancel = modalCancel.cloneNode(true);
+    modalConfirm.parentNode.replaceChild(newConfirm, modalConfirm);
+    modalCancel.parentNode.replaceChild(newCancel, modalCancel);
+    
+    // Add new listeners
+    newConfirm.addEventListener('click', () => {
+        confirmCallback();
+        modal.classList.remove('show');
+    });
+    
+    newCancel.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+}
+
+// ===========================
+// Update Last Updated Timestamp
+// ===========================
+function updateLastUpdated() {
+    const lastUpdatedEl = document.getElementById('lastUpdated');
+    const now = new Date();
+    const formattedDate = now.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+    lastUpdatedEl.textContent = `Last updated: ${formattedDate}`;
 }
 
 // ===========================
